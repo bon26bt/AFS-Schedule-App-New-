@@ -1,0 +1,407 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#14532d">
+<title>AFS Schedule</title>
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="AFS">
+<style>
+:root{--green:#14532d;--pale:#dcfce7;--bg:#f4f7f4;--card:#fff;--text:#17251b;--muted:#647067;--line:#dbe5dc;--red:#b91c1c;--field:#fff;--sec:#e5eee7;--secText:#14532d}
+@media (prefers-color-scheme:dark){:root{--bg:#0f1a13;--card:#17251b;--text:#e6f0e8;--muted:#9bb0a0;--line:#2a3d2f;--field:#101b14;--pale:#1f4a2e;--sec:#223629;--secText:#bfe6c8}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);font-family:Arial,system-ui,sans-serif;color:var(--text);padding-bottom:env(safe-area-inset-bottom,0)}
+header{background:#14532d;color:#fff;padding:calc(22px + env(safe-area-inset-top,0)) 16px 22px;border-radius:0 0 22px 22px}
+.wrap{max-width:760px;margin:auto;padding:0 14px}
+.brand{font-size:12px;letter-spacing:1.5px;font-weight:bold;opacity:.85}
+h1{font-size:27px;margin:7px 0}header p{margin:0;font-size:14px;opacity:.9}
+main{padding:18px 0 32px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:16px;margin-bottom:14px}
+.hidden{display:none!important}
+label{display:block;font-size:13px;font-weight:bold;margin:10px 0 5px}
+input,select,button{font:inherit}
+input,select{width:100%;padding:11px;border:1px solid var(--line);border-radius:9px;background:var(--field);color:var(--text)}
+button{border:0;border-radius:9px;padding:11px 14px;background:var(--green);color:#fff;font-weight:bold;cursor:pointer;margin:6px 5px 0 0}
+button.secondary{background:var(--sec);color:var(--secText)}
+button.danger{background:var(--red)}
+button:disabled{opacity:.5}
+.note{font-size:12px;color:var(--muted);line-height:1.5}
+.error{color:var(--red);font-size:13px;margin:8px 0 0}
+.ok{color:var(--secText);font-size:13px;margin:8px 0 0}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.days{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:13px}
+.day{padding:10px 4px;margin:0;background:var(--card);color:var(--text);border:1px solid var(--line)}
+.day.active{background:var(--green);color:#fff}
+.day.today{box-shadow:inset 0 -3px 0 #22c55e}
+.station{display:flex;gap:10px;align-items:center;padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--card);margin:8px 0}
+.station>div:nth-child(2){flex:1;min-width:0}
+.num{display:grid;place-items:center;flex-shrink:0;width:36px;height:36px;border-radius:10px;background:var(--pale);color:var(--secText);font-weight:bold}
+.station h3{margin:0 0 4px;font-size:16px}.station p{margin:0;color:var(--muted);font-size:14px}
+.station.mine{border-color:#22c55e;box-shadow:0 0 0 2px #22c55e55}
+.heading{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.heading h2{font-size:21px;margin:0 0 10px}
+.pill{background:var(--pale);color:var(--secText);padding:6px 9px;border-radius:99px;font-size:12px;font-weight:bold;white-space:nowrap}
+.res{display:flex;justify-content:space-between;gap:8px;padding:9px 0;border-bottom:1px solid var(--line);font-size:14px}.res:last-child{border:0}
+footer{text-align:center;font-size:12px;color:var(--muted);padding:12px 0 24px}
+hr{border:0;border-top:1px solid var(--line);margin:16px 0}
+@media(min-width:540px){.days{grid-template-columns:repeat(6,1fr)}}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin:6px auto 0;max-width:320px}.ch{font-size:10px;font-weight:bold;color:var(--muted);text-align:center;padding:2px 0}.cd{margin:0;padding:4px 0;font-size:12px;border-radius:7px;background:var(--card);color:var(--text);border:1px solid var(--line);font-weight:normal}.cd.sun{color:var(--red)}.cd.today{box-shadow:inset 0 -3px 0 #22c55e}.cd.sel{background:var(--green);color:#fff}.calhead{display:flex;align-items:center;justify-content:space-between;gap:8px}.calhead button{margin:0;padding:4px 12px}.calcard{padding:10px 12px}.calcard strong{font-size:14px}
+.report-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.report-row{padding:10px 0;border-bottom:1px solid var(--line)}.tag{font-size:12px;font-weight:bold;padding:5px 8px;border-radius:20px;background:var(--pale);color:var(--secText)}.tag.red{background:#fee2e2;color:#991b1b}.tag.gray{background:var(--sec);color:var(--muted)}
+</style></head><body>
+<header><div class="wrap"><div class="brand">AFS JIMMA</div><h1>AFS Schedule</h1><p>Weekly station assignments and Finfine shifts</p></div></header>
+<main class="wrap">
+
+<section id="setupMissing" class="card hidden"><h2>Setup needed</h2><p class="note">Firebase is not configured yet. Open <b>firebase-config.js</b> and paste your Firebase web app settings (see README.md).</p></section>
+
+<section id="login" class="card hidden"><h2>Sign in</h2>
+<label for="loginName">Username</label><input id="loginName" autocomplete="username" autocapitalize="none">
+<label for="loginPass">Password</label><input id="loginPass" type="password" autocomplete="current-password">
+<button id="loginBtn">Login</button><p id="loginError" class="error"></p>
+<p class="note">Accounts are created by the Admin. No OTP is used.</p></section>
+
+<section id="app" class="hidden">
+<div class="card heading"><div><strong id="welcome"></strong><div class="note" id="roleText"></div></div><div><span class="pill" id="sync">…</span> <button class="secondary" id="refreshBtn">↻ Refresh</button> <button class="secondary" id="logoutBtn">Logout</button></div></div>
+
+<section class="card" id="shareFiles"><h2 style="margin:0 0 8px;font-size:18px">Share files with AFS admin</h2>
+<p class="note">Choose only the photos, videos or documents you want to share. Nothing is collected automatically.</p>
+<input id="uploadFiles" type="file" multiple accept="image/*,video/*,.pdf,.doc,.docx,.xls,.xlsx,.txt" aria-label="Choose files to share">
+<button id="uploadBtn">Upload selected files</button><p id="uploadMsg" class="note" aria-live="polite"></p></section>
+
+<section class="card" id="dailyReport"><h2 style="margin:0 0 8px;font-size:18px">Gabaasa taargaa konkolaataa</h2>
+<p class="note">Sarara tikeetii itti kutte filadhu; taargaa konkolaataa galchiitii ergi. Erga ergamee booda hojjetaan jijjiiruu hin danda'u.</p>
+<label for="reportDate">Guyyaa</label><input id="reportDate" type="date" readonly>
+<label for="reportRoute">Sarara tikeetii kute</label><select id="reportRoute"></select>
+<label for="reportPlate">Taargaa konkolaataa</label><input id="reportPlate" placeholder="Fakkeenya: 3-00123" autocapitalize="characters">
+<button id="submitReport">Upload / Ergi</button><p id="reportMsg" class="note" aria-live="polite"></p>
+<div id="myTodayReports"></div></section>
+
+<section class="card"><h2 style="margin:0 0 8px;font-size:18px">Find a person</h2>
+<input id="find" placeholder="Type a name, e.g. Sami" autocomplete="off"><div id="findOut"></div></section>
+
+<section class="card calcard"><div class="calhead"><button class="secondary" id="calPrev" aria-label="Previous month">‹</button><strong id="calTitle"></strong><button class="secondary" id="calNext" aria-label="Next month">›</button></div><div class="cal" id="calGrid"></div><p class="note" id="calNote" style="margin:6px 0 0"></p></section>
+<section class="card"><div class="heading"><h2>Jimma weekly schedule</h2><span class="pill">6 days</span></div>
+<div class="days" id="days"></div><div id="schedule"></div></section>
+
+<section class="card"><div class="heading"><h2>Finfine</h2><span class="pill" id="finDayPill">Weekly</span></div><div id="finfine"></div></section>
+
+<section id="adminPanel" class="card hidden"><h2 style="margin:0 0 6px">Admin tools</h2>
+<p class="note">Changes save for everyone instantly.</p>
+<h3 style="margin:14px 0 0">Update assignment</h3>
+<div class="row"><div><label for="editDay">Day</label><select id="editDay"></select></div>
+<div><label for="editStation">Station</label><select id="editStation"></select></div></div>
+<label for="editStaff">Assigned staff (separate with commas)</label><input id="editStaff" placeholder="e.g. Elias, Sami">
+<button id="saveA">Save assignment</button><button class="secondary" id="clearA">Clear</button>
+<hr><h3 style="margin:0">Finfine shifts</h3>
+<label for="finDay">Day</label><select id="finDay"></select>
+<div class="row"><div><label for="finShift">Shift</label><select id="finShift"><option>Morning</option><option>Daytime</option></select></div>
+<div><label for="finNames">Staff names</label><input id="finNames" placeholder="Separate with commas"></div></div>
+<button id="saveF">Save Finfine shifts</button>
+<hr><h3 style="margin:0">Add user account</h3>
+<div class="row"><div><label for="newUser">New username</label><input id="newUser" autocapitalize="none"></div>
+<div><label for="newPass">Password (8+ characters)</label><input id="newPass" type="password" autocomplete="new-password"></div></div>
+<button id="addU">Create user</button>
+<p id="adminMsg" class="ok"></p><div id="userList"></div>
+<hr><h3 style="margin:0">Galmee konkolaatota bobbii</h3>
+<p class="note">Admin taargaa konkolaatota sarara tokkoon tokkoon irratti bobbiif qaban galmeessa.</p>
+<label for="rosterRoute">Sarara</label><select id="rosterRoute"></select>
+<label for="rosterPlate">Taargaa konkolaataa</label><input id="rosterPlate" placeholder="Fakkeenya: 3-00123">
+<button id="addRoster">Konkolaaataa galmeessi</button><div id="rosterList"></div>
+<hr><h3 style="margin:0">Gabaasa taargaa</h3>
+<div class="report-grid"><div><label for="reportFrom">Guyyaa jalqabaa</label><input id="reportFrom" type="date"></div><div><label for="reportTo">Guyyaa xumuraa</label><input id="reportTo" type="date"></div></div>
+<label for="adminRouteFilter">Sarara</label><select id="adminRouteFilter"><option value="">Sarara hunda</option></select>
+<button id="loadReports">Gabaasa ilaali</button><button class="secondary" id="exportReports">Excel buufadhu (.xlsx)</button>
+<div id="reportSummary" class="note"></div><div id="adminReports"></div>
+<hr><h3 style="margin:0">Shared files from users</h3><p class="note">Only files users deliberately selected and uploaded appear here.</p><div id="sharedFiles"><p class="note">Loading…</p></div></section>
+</section>
+</main>
+<footer class="wrap">AFS Schedule · Prepared by Bonsa</footer>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-functions-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script>
+// Firebase web app configuration (afs-schedule)
+window.FIREBASE_CONFIG = {
+  apiKey: "AIzaSyB428pHezZ8e9UVRyqczUIhf_FgvjtdvHo",
+  authDomain: "afs-schedule.firebaseapp.com",
+  projectId: "afs-schedule",
+  storageBucket: "afs-schedule.firebasestorage.app",
+  messagingSenderId: "590915203901",
+  appId: "1:590915203901:web:a92e619d7c64a876964b54"
+};
+</script>
+<script>
+const DAYS=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+const STATIONS=['Agaro','Beddelle','Geeraa','Limmu'];
+const SHIFTS=['Morning','Daytime'];
+const INITIAL={Monday:{Agaro:'Fate, Abuki',Beddelle:'Elias',Geeraa:'Yusra, Haniya',Limmu:'Redwan, Sami'},Tuesday:{Agaro:'Yusra, Haniya',Beddelle:'Redwan, Sami',Geeraa:'Fate, Abuki',Limmu:'Elias'},Wednesday:{Agaro:'Elias',Beddelle:'Yusra, Haniya',Geeraa:'Redwan, Sami',Limmu:'Fate, Abuki'},Thursday:{Agaro:'Redwan, Sami',Beddelle:'Fate, Abuki',Geeraa:'Elias',Limmu:'Yusra, Haniya'},Friday:{Agaro:'Sami',Beddelle:'Abuki, Elias',Geeraa:'Haniya, Fate',Limmu:'Redwan, Yusra'},Saturday:{Agaro:'Abuki, Yusra',Beddelle:'Redwan, Fate',Geeraa:'Elias',Limmu:'Haniya, Sami'}};
+const BASE_FIN={Morning:['Redwan','Haniya','Abuki'],Daytime:['Elias','Sami','Yusra','Fate']};
+const FIN_TABLE=[[['?'],['Elias']],[['Redwan'],['Sami']],[['Haniya'],['Yusra']],[['Abuki'],['Fate']],[['Haniya','Abuki'],['Fate','Yusra']],[['Redwan','Temesgen'],['Elias','Sami']]];
+const mkFin=()=>Object.fromEntries(DAYS.map((d,k)=>[d,{Morning:[...FIN_TABLE[k][0]],Daytime:[...FIN_TABLE[k][1]]}]));
+const INITIAL_FIN=mkFin();
+const normFin=f=>{if(!f)return mkFin();if(Array.isArray(f.Morning)||Array.isArray(f.Daytime)){const o=mkFin();DAYS.forEach(d=>SHIFTS.forEach(x=>{if(Array.isArray(f[x]))o[d][x]=f[x]}));return o}return f};
+const DOMAIN='@afs-jimma.app';
+const ROUTES=['Jimma – Addis Ababa','Jimma – Beddelle','Jimma – Agaro','Jimma – Geeraa','Jimma – Limmu','Jimma – Finfine'];
+const localISO=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+const routeKey=s=>String(s||'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+const plateKey=s=>String(s||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
+
+
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const split=s=>String(s||'').split(',').map(x=>x.trim()).filter(Boolean);
+const realToday=()=>{const n=new Date().getDay();return n===0?null:DAYS[n-1]};
+const show=id=>['setupMissing','login','app'].forEach(x=>$(x).classList.toggle('hidden',x!==id));
+const clone=o=>JSON.parse(JSON.stringify(o));
+
+let sched=clone(INITIAL),fin=clone(INITIAL_FIN),selectedDay=realToday()||'Monday';
+let refreshFn=null,isAdmin=false,auth,db,storage,config=window.FIREBASE_CONFIG,unsubs=[],profile=null;
+
+/* ---------- render ---------- */
+function renderDays(){
+  $('days').innerHTML=DAYS.map(d=>`<button class="day ${d===selectedDay?'active':''} ${d===realToday()?'today':''}" data-d="${d}">${d}</button>`).join('');
+  $('days').querySelectorAll('button').forEach(b=>b.onclick=()=>{selectedDay=b.dataset.d;selDate=null;renderAll();});
+}
+function renderSchedule(){
+  const q=$('find').value.trim().toLowerCase(),data=sched[selectedDay]||{};
+  $('schedule').innerHTML=STATIONS.map((s,i)=>{
+    const t=data[s]||'',mine=q&&split(t).some(n=>n.toLowerCase().includes(q));
+    return `<article class="station ${mine?'mine':''}"><div class="num">${i+1}</div><div><h3>${s}</h3><p>${esc(t||'Not assigned')}</p></div></article>`;
+  }).join('');
+}
+function renderFinfine(){
+  const q=$('find').value.trim().toLowerCase();
+  $('finDayPill').textContent='6 days';
+  $('finfine').innerHTML=DAYS.map(d=>{
+    const day=fin[d]||{};
+    const mine=q&&SHIFTS.some(s=>(day[s]||[]).some(n=>n.toLowerCase().includes(q)));
+    const line=(s)=>`<p><b>${s}:</b> ${(day[s]||[]).map(esc).join(', ')||'Not assigned'}</p>`;
+    return `<div class="station ${mine?'mine':''}" style="${d===selectedDay?'border-color:#22c55e':''}"><div class="num">${d.slice(0,3)}</div><div><h3>${d}</h3>${line('Morning')}${line('Daytime')}</div></div>`;
+  }).join('');
+}
+function renderFind(){
+  const q=$('find').value.trim().toLowerCase();
+  if(!q){$('findOut').innerHTML='';return;}
+  const rows=[];
+  DAYS.forEach(d=>STATIONS.forEach(s=>{if(split((sched[d]||{})[s]).some(n=>n.toLowerCase().includes(q)))rows.push(`<div class="res"><strong>${d}</strong><span>${s}</span></div>`);}));
+  DAYS.forEach(d=>SHIFTS.forEach(s=>{if(((fin[d]||{})[s]||[]).some(n=>n.toLowerCase().includes(q)))rows.push(`<div class="res"><strong>${d}</strong><span>Finfine · ${s}</span></div>`);}));
+  $('findOut').innerHTML=rows.length?rows.join(''):'<p class="note">No assignments found for that name.</p>';
+}
+function prefill(){
+  if(!isAdmin)return;
+  if(document.activeElement!==$('editStaff'))$('editStaff').value=(sched[$('editDay').value]||{})[$('editStation').value]||'';
+  if(document.activeElement!==$('finNames'))$('finNames').value=((fin[$('finDay').value]||{})[$('finShift').value]||[]).join(', ');
+}
+function renderAll(){renderDays();renderSchedule();renderFinfine();renderFind();renderCal();prefill();}
+function msg(t,err){const m=$('adminMsg');m.textContent=t;m.className=err?'error':'ok';}
+const errText=e=>({'auth/invalid-credential':'Incorrect username or password.','auth/invalid-login-credentials':'Incorrect username or password.','auth/user-not-found':'Incorrect username or password.','auth/wrong-password':'Incorrect username or password.','auth/email-already-in-use':'That username already exists.','auth/network-request-failed':'No internet connection.','auth/too-many-requests':'Too many attempts. Try again later.','permission-denied':'You do not have permission for that.'}[e.code]||e.message||'Something went wrong.');
+
+
+/* ---------- calendar ---------- */
+let viewM=new Date();viewM=new Date(viewM.getFullYear(),viewM.getMonth(),1);let selDate=null;
+const MN=['January','February','March','April','May','June','July','August','September','October','November','December'];
+function renderCal(){
+  const y=viewM.getFullYear(),m=viewM.getMonth(),first=(new Date(y,m,1).getDay()+6)%7,n=new Date(y,m+1,0).getDate(),t=new Date();
+  let h=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(x=>`<div class="ch">${x}</div>`).join('')+'<div></div>'.repeat(first);
+  for(let d=1;d<=n;d++){const dt=new Date(y,m,d),isT=dt.toDateString()===t.toDateString(),isS=selDate&&dt.toDateString()===selDate.toDateString();
+    h+=`<button class="cd ${isT?'today':''} ${isS?'sel':''} ${dt.getDay()===0?'sun':''}" data-d="${d}">${d}</button>`;}
+  $('calGrid').innerHTML=h;$('calTitle').textContent=MN[m]+' '+y;
+  $('calGrid').querySelectorAll('.cd').forEach(b=>b.onclick=()=>{const dt=new Date(y,m,+b.dataset.d);selDate=dt;if(dt.getDay()!==0)selectedDay=DAYS[dt.getDay()-1];renderAll();});
+  $('calNote').textContent=selDate?selDate.toDateString()+(selDate.getDay()===0?' · Sunday: no schedule':' · '+DAYS[selDate.getDay()-1]):'Tap a date to see its schedule.';
+}
+$('calPrev').onclick=()=>{viewM=new Date(viewM.getFullYear(),viewM.getMonth()-1,1);renderCal();};
+$('calNext').onclick=()=>{viewM=new Date(viewM.getFullYear(),viewM.getMonth()+1,1);renderCal();};
+
+/* ---------- saved copy: data is fetched only on first run and on Refresh ---------- */
+const CK='afsCache1';
+function loadCache(){try{const c=JSON.parse(localStorage.getItem(CK));if(c){if(c.sched)sched=c.sched;if(c.fin)fin=normFin(c.fin);return c.t||null;}}catch(e){}return null;}
+function saveCache(){try{localStorage.setItem(CK,JSON.stringify({sched,fin,t:Date.now()}));}catch(e){}}
+const fmtT=t=>{const d=new Date(t);return d.toLocaleDateString([], {day:'numeric',month:'short'})+' '+d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});};
+
+/* ---------- firebase ---------- */
+function configured(){return config&&config.apiKey&&!String(config.apiKey).includes('PASTE');}
+function init(){
+  if(!configured()){show('setupMissing');return;}
+  firebase.initializeApp(config);
+  auth=firebase.auth();db=firebase.firestore();storage=firebase.storage();
+  db.enablePersistence({synchronizeTabs:true}).catch(()=>{});
+  auth.onAuthStateChanged(onUser);
+  show('login');
+}
+async function onUser(user){
+  unsubs.forEach(u=>u());unsubs=[];
+  if(!user){show('login');return;}
+  let perr=null;
+  try{
+    const snap=await db.doc('users/'+user.uid).get();
+    profile=snap.exists?snap.data():null;
+    if(profile)try{localStorage.setItem('afsProfile_'+user.uid,JSON.stringify(profile));}catch(_){}
+  }catch(e){perr=e;profile=null;try{profile=JSON.parse(localStorage.getItem('afsProfile_'+user.uid));}catch(_){}}
+  if(!profile||profile.active!==true){
+    $('loginError').textContent=perr?('Cannot read your profile ('+(perr.code||perr.message)+'). UID: '+user.uid):(!profile?('No profile found in Firestore for UID: '+user.uid):('Profile found but "active" is not boolean true (value: '+JSON.stringify(profile.active)+').'));
+    await auth.signOut();return;
+  }
+  isAdmin=profile.role==='admin';
+  $('welcome').textContent='Welcome, '+(profile.username||user.email.split('@')[0]);
+  $('roleText').textContent=isAdmin?'Administrator':'Read-only user';
+  $('adminPanel').classList.toggle('hidden',!isAdmin);
+  $('dailyReport').classList.toggle('hidden',isAdmin);
+  fill($('reportRoute'),ROUTES);fill($('rosterRoute'),ROUTES);
+  $('reportDate').value=localISO();$('reportDate').max=localISO();
+  if(isAdmin){$('reportFrom').value=localISO();$('reportTo').value=localISO();fill($('adminRouteFilter'),['All routes',...ROUTES]);$('adminRouteFilter').options[0].value='';}
+
+  $('loginError').textContent='';$('loginPass').value='';
+  show('app');
+  if(isAdmin){fill($('editDay'),DAYS);fill($('editStation'),STATIONS);fill($('finDay'),DAYS);$('finDay').value=selectedDay;$('finDay').onchange=()=>{$('finNames').value='';prefill();};$('editDay').value=selectedDay;}
+  refreshFn=async()=>{
+    $('sync').textContent='Updating…';
+    try{
+      const [a,b]=await Promise.all([db.doc('afs/schedule').get({source:'server'}),db.doc('afs/finfine').get({source:'server'})]);
+      if(a.exists)sched=a.data().data;else if(isAdmin)db.doc('afs/schedule').set({data:sched}).catch(()=>{});
+      if(b.exists)fin=normFin(b.data().data);else if(isAdmin)db.doc('afs/finfine').set({data:fin}).catch(()=>{});
+      saveCache();renderAll();$('sync').textContent='Updated '+fmtT(Date.now());
+      if(isAdmin){loadUsers();loadSharedFiles();loadRoster();loadReports();}else{loadMyTodayReports();}
+    }catch(e){$('sync').textContent='Offline · saved copy';}
+  };
+  $('refreshBtn').onclick=refreshFn;
+  const ct=loadCache();renderAll();
+  if(ct)$('sync').textContent='Saved copy · '+fmtT(ct);else refreshFn();
+  if(isAdmin&&ct){loadUsers();loadSharedFiles();loadRoster();loadReports();}else if(!isAdmin){loadMyTodayReports();}
+  renderAll();
+}
+function fill(sel,arr){sel.innerHTML=arr.map(x=>`<option>${x}</option>`).join('');}
+const online=()=>navigator.onLine;
+
+/* ---------- actions ---------- */
+$('loginBtn').onclick=async()=>{
+  const n=$('loginName').value.trim().toLowerCase(),p=$('loginPass').value;
+  if(!n||!p){$('loginError').textContent='Enter username and password.';return;}
+  $('loginBtn').disabled=true;$('loginError').textContent='';
+  try{await auth.signInWithEmailAndPassword(n+DOMAIN,p);}catch(e){$('loginError').textContent=errText(e);}
+  $('loginBtn').disabled=false;
+};
+$('loginPass').onkeydown=e=>{if(e.key==='Enter')$('loginBtn').click();};
+$('logoutBtn').onclick=()=>auth.signOut();
+$('find').oninput=()=>{renderSchedule();renderFinfine();renderFind();};
+
+async function saveSched(){try{await db.doc('afs/schedule').set({data:sched});saveCache();msg('Saved. Everyone sees the change now.');}catch(e){msg(errText(e),true);}}
+async function saveFin(){try{await db.doc('afs/finfine').set({data:fin});saveCache();msg('Finfine shifts saved.');}catch(e){msg(errText(e),true);}}
+$('editDay').onchange=$('editStation').onchange=()=>{$('editStaff').value='';prefill();};
+$('finShift').onchange=()=>{$('finNames').value='';prefill();};
+$('saveA').onclick=()=>{const d=$('editDay').value,s=$('editStation').value;sched[d]=sched[d]||{};sched[d][s]=$('editStaff').value.trim();renderAll();saveSched();};
+$('clearA').onclick=()=>{const d=$('editDay').value,s=$('editStation').value;sched[d]=sched[d]||{};sched[d][s]='';$('editStaff').value='';renderAll();saveSched();};
+$('saveF').onclick=()=>{fin[$('finDay').value]=fin[$('finDay').value]||{};fin[$('finDay').value][$('finShift').value]=split($('finNames').value);renderAll();saveFin();};
+
+$('addU').onclick=async()=>{
+  const n=$('newUser').value.trim().toLowerCase(),p=$('newPass').value;
+  if(!/^[a-z0-9._-]{3,}$/.test(n)||p.length<8){msg('Username: 3+ letters/numbers (no spaces). Password: 8+ characters.',true);return;}
+  $('addU').disabled=true;
+  try{
+    const createStaff=firebase.app().functions('us-central1').httpsCallable('adminCreateStaff');
+    const result=await createStaff({username:n,password:p});
+    $('newUser').value='';$('newPass').value='';
+    msg('User account created: '+(result.data.username||n));
+    loadUsers();
+  }catch(e){msg(errText(e),true);}
+  $('addU').disabled=false;
+};
+function loadUsers(){db.collection('users').get().then(renderUsers).catch(()=>{});}
+
+/* ---------- daily vehicle taarga reports ---------- */
+async function submitDailyReport(){
+  const date=$('reportDate').value,route=$('reportRoute').value,plate=$('reportPlate').value.trim().toUpperCase();
+  if(date!==localISO()){$('reportMsg').textContent='Guyyaa har’aa qofa report erguu dandeessa.';return;}
+  if(!route||!plate){$('reportMsg').textContent='Sarara fi taargaa guuti.';return;}
+  const id=date+'_'+routeKey(route)+'_'+plateKey(plate);
+  $('submitReport').disabled=true;$('reportMsg').textContent='Ergaa jira…';
+  try{
+    await db.collection('vehicleReports').doc(id).create({date,route,routeKey:routeKey(route),plate,plateKey:plate,ownerUid:auth.currentUser.uid,username:profile.username||auth.currentUser.email,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+    $('reportPlate').value='';$('reportMsg').textContent='Report milkaa’inaan ergame. Jijjiiruun hin danda’amu.';loadMyTodayReports();
+  }catch(e){$('reportMsg').textContent=e.code==='already-exists'?'Taargaan kun sarara kana irratti guyyaa kana duraan galmaa’eera.':errText(e);}
+  $('submitReport').disabled=false;
+}
+async function loadMyTodayReports(){
+  if(isAdmin||!auth.currentUser)return;
+  const box=$('myTodayReports');box.innerHTML='<p class="note">Report koo har’aa…</p>';
+  try{const snap=await db.collection('vehicleReports').where('ownerUid','==',auth.currentUser.uid).where('date','==',localISO()).get();
+    const rows=[];snap.forEach(d=>rows.push(d.data()));
+    box.innerHTML='<hr><b>Report koo har’aa ('+rows.length+')</b>'+(rows.length?rows.map(r=>`<div class="report-row"><b>${esc(r.plate)}</b><div class="note">${esc(r.route)} · ${esc(r.date)}</div><span class="tag">Ergame · hin jijjiiramu</span></div>`).join(''):'<p class="note">Har’a report hin ergine.</p>');
+  }catch(e){box.innerHTML='<p class="error">Report arguu hin dandeenye.</p>';}
+}
+$('submitReport').onclick=submitDailyReport;
+async function loadRoster(){
+ if(!isAdmin)return;const box=$('rosterList');box.innerHTML='<p class="note">Loading…</p>';
+ try{const snap=await db.collection('vehicleRoster').get();const rows=[];snap.forEach(d=>rows.push({id:d.id,...d.data()}));
+ rows.sort((a,b)=>(a.route||'').localeCompare(b.route||'')||(a.plate||'').localeCompare(b.plate||''));
+ box.innerHTML=rows.length?rows.map(r=>`<div class="report-row"><b>${esc(r.plate)}</b><div class="note">${esc(r.route)}</div><button class="danger" data-del-roster="${esc(r.id)}">Haqi</button></div>`).join(''):'<p class="note">Taargaan hin galmoofne.</p>';
+ box.querySelectorAll('[data-del-roster]').forEach(b=>b.onclick=async()=>{if(confirm('Taargaa kana galmee bobbii irraa haquu barbaaddaa?')){await db.collection('vehicleRoster').doc(b.dataset.delRoster).delete();loadRoster();}});
+ }catch(e){box.innerHTML='<p class="error">'+esc(errText(e))+'</p>';}
+}
+$('addRoster').onclick=async()=>{const route=$('rosterRoute').value,plate=$('rosterPlate').value.trim().toUpperCase();if(!plate){msg('Taargaa galchi.',true);return;}
+ const id=routeKey(route)+'_'+plateKey(plate);try{await db.collection('vehicleRoster').doc(id).set({route,routeKey:routeKey(route),plate,plateKey:plate,active:true,createdAt:firebase.firestore.FieldValue.serverTimestamp(),createdBy:auth.currentUser.uid});$('rosterPlate').value='';msg('Taargaan bobbii galmaa’e.');loadRoster();}catch(e){msg(errText(e),true);}};
+async function loadReports(){
+ if(!isAdmin)return;const box=$('adminReports');box.innerHTML='<p class="note">Gabaasa fe’aa…</p>';
+ try{const from=$('reportFrom').value||localISO(),to=$('reportTo').value||from,route=$('adminRouteFilter').value;
+ let q=db.collection('vehicleReports').where('date','>=',from).where('date','<=',to);
+ const [rs,vs]=await Promise.all([q.get(),db.collection('vehicleRoster').get()]);
+ const reports=[];rs.forEach(d=>{const r={id:d.id,...d.data()};if(!route||r.routeKey===routeKey(route))reports.push(r);});reports.sort((a,b)=>(b.date||'').localeCompare(a.date||'')||(a.route||'').localeCompare(b.route||'')||(a.plate||'').localeCompare(b.plate||''));
+ const roster=[];vs.forEach(d=>{const v=d.data();if(v.active!==false&&(!route||v.routeKey===routeKey(route)))roster.push(v);});
+ const reported=new Set(reports.map(r=>r.routeKey+'_'+r.plateKey));const notReported=roster.filter(v=>!reported.has(v.routeKey+'_'+v.plateKey));
+ $('reportSummary').innerHTML=`<p><b>Report argame:</b> ${reports.length} · <b>Taargaa bobbii:</b> ${roster.length} · <b>Report hin arganne:</b> ${notReported.length}</p><p class="note">“Report hin arganne” jechuun taargaan roster keessa jiraatee report guyyaa filatame keessatti hin galmoofne jechuu dha; ofumaan hin bobbaane jechuun mirkanaa’aa miti.</p>`;
+ let html='<h4>Taargaa report ta’e</h4>'+ (reports.length?reports.map(r=>`<div class="report-row"><b>${esc(r.plate)}</b> <span class="tag">Report argame</span><div class="note">${esc(r.date)} · ${esc(r.route)} · ${esc(r.username||'')}</div></div>`).join(''):'<p class="note">Report hin jiru.</p>');
+ html+='<h4>Taargaa report hin arganne</h4>'+(notReported.length?notReported.map(v=>`<div class="report-row"><b>${esc(v.plate)}</b> <span class="tag red">Report hin argamne</span><div class="note">${esc(v.route)}</div></div>`).join(''):'<p class="note">Taargaan hafee hin jiru.</p>');box.innerHTML=html;
+ window.afsReportExport={reports,roster,notReported,from,to,route};
+ }catch(e){box.innerHTML='<p class="error">Gabaasa fe’uu hin dandeenye: '+esc(errText(e))+'</p>';}
+}
+$('loadReports').onclick=loadReports;
+$('exportReports').onclick=()=>{const d=window.afsReportExport;if(!d){msg('Dura gabaasa ilaali.',true);return;}if(!window.XLSX){msg('Excel library hin argamne; internet ilaali.',true);return;}
+ const wb=XLSX.utils.book_new();const rows=[['Guyyaa','Sarara','Taargaa','Hojjetaa','Haala'],...d.reports.map(r=>[r.date,r.route,r.plate,r.username||'', 'Report argame']),...d.notReported.map(v=>[d.from+' - '+d.to,v.route,v.plate,'','Report hin argamne'])];
+ XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(rows),'Gabaasa');XLSX.writeFile(wb,'AFS-Taargaa-'+d.from+'-'+d.to+'.xlsx');};
+
+/* ---------- explicitly selected file sharing ---------- */
+$('uploadBtn').onclick=async()=>{
+  const files=Array.from($('uploadFiles').files||[]);
+  if(!files.length){$('uploadMsg').textContent='Choose one or more files first.';return;}
+  if(files.some(f=>f.size>25*1024*1024)){$('uploadMsg').textContent='Each file must be 25 MB or smaller.';return;}
+  $('uploadBtn').disabled=true;
+  try{
+    for(let i=0;i<files.length;i++){
+      const f=files[i],safe=f.name.replace(/[^a-zA-Z0-9._-]/g,'_');
+      const path='user-shared/'+auth.currentUser.uid+'/'+Date.now()+'_'+i+'_'+safe;
+      $('uploadMsg').textContent='Uploading '+(i+1)+' of '+files.length+': '+f.name;
+      const ref=storage.ref(path);
+      await ref.put(f,{contentType:f.type||'application/octet-stream'});
+      await db.collection('sharedFiles').add({ownerUid:auth.currentUser.uid,username:profile.username||auth.currentUser.email,filename:f.name,storagePath:path,contentType:f.type||'application/octet-stream',size:f.size,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+    }
+    $('uploadFiles').value='';$('uploadMsg').textContent='Upload complete. The AFS admin can now view the files.';
+  }catch(e){$('uploadMsg').textContent='Upload failed: '+errText(e);}
+  $('uploadBtn').disabled=false;
+};
+async function loadSharedFiles(){
+  if(!isAdmin)return;
+  const box=$('sharedFiles');box.innerHTML='<p class="note">Loading shared files…</p>';
+  try{
+    const snap=await db.collection('sharedFiles').get();
+    const rows=[];snap.forEach(d=>rows.push({id:d.id,...d.data()}));
+    rows.sort((a,b)=>((b.createdAt?.toMillis?.()||0)-(a.createdAt?.toMillis?.()||0)));
+    if(!rows.length){box.innerHTML='<p class="note">No files have been shared yet.</p>';return;}
+    box.innerHTML=rows.map(f=>`<div class="station"><div style="flex:1;min-width:0"><strong>${esc(f.filename||'File')}</strong><p class="note">${esc(f.username||f.ownerUid||'User')} · ${((f.size||0)/1024/1024).toFixed(2)} MB</p></div><button data-file="${esc(f.id)}">Open</button></div>`).join('');
+    box.querySelectorAll('button[data-file]').forEach(b=>b.onclick=async()=>{b.disabled=true;try{const f=rows.find(x=>x.id===b.dataset.file);const url=await storage.ref(f.storagePath).getDownloadURL();window.open(url,'_blank','noopener');}catch(e){msg(errText(e),true);}b.disabled=false;});
+  }catch(e){box.innerHTML='<p class="error">Cannot load shared files: '+esc(errText(e))+'</p>';}
+}
+
+function renderUsers(snap){
+  const rows=[];snap.forEach(d=>rows.push({id:d.id,...d.data()}));
+  rows.sort((a,b)=>String(a.username).localeCompare(b.username));
+  $('userList').innerHTML='<h3>User accounts</h3>'+rows.map(u=>`<div class="station"><div><strong>${esc(u.username)}</strong><p class="note">${u.role==='admin'?'Administrator':'Read-only'} · ${u.active?'Active':'Disabled'}</p></div>${u.role==='admin'?'':`<button class="${u.active?'danger':'secondary'}" data-id="${u.id}" data-a="${u.active?0:1}">${u.active?'Disable':'Enable'}</button>`}</div>`).join('');
+  $('userList').querySelectorAll('button').forEach(b=>b.onclick=()=>db.doc('users/'+b.dataset.id).update({active:b.dataset.a==='1'}).then(loadUsers).catch(e=>msg(errText(e),true)));
+}
+
+if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+init();
+</script></body></html>
